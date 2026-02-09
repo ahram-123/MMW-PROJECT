@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathematics in Modern World</title>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Nunito:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="custom-cursor"></div>
+<div class="cursor-dot"></div>
+<div class="scanlines"></div>
+
+<canvas id="geo-canvas"></canvas>
+
+<div class="floating-shape shape-1"></div>
+<div class="floating-shape shape-2"></div>
+<div class="floating-shape shape-3"></div>
+
+<header>
+  <div class="logo-container">
+    <h1 id="typewriter-title"></h1>
+    <div class="glitch-line"></div>
+  </div>
+  <nav>
+    <button id="concepts-tab" class="active-tab"><span class="btn-text">Concepts</span><div class="btn-bg"></div></button>
+    <button id="symmetry-tab-btn"><span class="btn-text">Symmetry Lab</span><div class="btn-bg"></div></button>
+    <button id="exam-tab"><span class="btn-text">Exam Mode</span><div class="btn-bg"></div></button>
+    <button id="add-tab-btn"><span class="btn-text">Add Content</span><div class="btn-bg"></div></button>
+  </nav>
+</header>
+
+<main>
+
+<section id="concepts" class="active">
+  <div class="section-header">
+    <h2><span class="icon">∑</span> Concept Library</h2>
+    <div class="decor-line"></div>
+  </div>
+  <div class="card-grid" id="conceptGrid"></div>
+</section>
+
+<section id="symmetry-lab">
+  <div class="section-header">
+    <h2><span class="icon">⌬</span> Symmetry Lab</h2>
+    <div class="decor-line"></div>
+  </div>
+  
+  <div class="lab-container glass-panel">
+     <div class="controls">
+       <label>Select Geometry:</label>
+       <div class="select-wrapper">
+         <select id="shape-select" onchange="updateShape()">
+          <option value="triangle" data-order="3">Triangle (3-fold)</option>
+          <option value="square" data-order="4">Square (4-fold)</option>
+          <option value="pentagon" data-order="5">Pentagon (5-fold)</option>
+          <option value="hexagon" data-order="6">Hexagon (6-fold)</option>
+          <option value="octagon" data-order="8">Octagon (8-fold)</option>
+          <option value="circle" data-order="360">Circle (Infinite)</option>
+        </select>
+       </div>
+      <button onclick="rotateShape()" class="action-btn glow-btn">Rotate Shape ↻</button>
+     </div>
+
+     <div class="display-area">
+        <div class="grid-bg"></div>
+        <div id="shape-display"></div>
+        <div class="data-panel">
+          <p id="shape-info"></p>
+        </div>
+     </div>
+  </div>
+</section>
+
+<section id="exam">
+  <div class="section-header">
+    <h2><span class="icon">✎</span> Exam Mode</h2>
+    <div class="decor-line"></div>
+  </div>
+
+  <div class="exam-wrapper">
+    <div id="quiz-progress">
+      <div id="quiz-progress-bar"></div>
+    </div>
+    
+    <div class="exam-box glass-panel" id="examBox"></div>
+
+    <div class="exam-controls">
+      <button onclick="nextQuestion()" class="glow-btn">Next Question →</button>
+      <button onclick="retakeExam()" class="secondary">Reset</button>
+      <button onclick="shuffleExam()" class="secondary">Shuffle</button>
+    </div>
+
+    <p id="quiz-result"></p>
+  </div>
+</section>
+
+<section id="add-content">
+  <div class="section-header">
+    <h2><span class="icon">+</span> Contributor Panel</h2>
+    <div class="decor-line"></div>
+  </div>
+
+  <div class="grid-2-col">
+    <div class="overlay-container glass-panel">
+      <h3>Add Concept</h3>
+      <div class="input-group">
+        <input id="new-concept-title" placeholder="Concept Title">
+      </div>
+      <div class="input-group">
+        <textarea id="new-concept-text" placeholder="Description / Formula"></textarea>
+      </div>
+      <button onclick="addNewConcept()" class="glow-btn">Submit to Library</button>
+    </div>
+
+    <div class="overlay-container glass-panel">
+      <h3>Add Exam Question</h3>
+      <div class="input-group">
+        <input id="new-question" placeholder="Question Prompt">
+      </div>
+      <div class="options-grid">
+        <input id="opt1" placeholder="Choice A">
+        <input id="opt2" placeholder="Choice B">
+        <input id="opt3" placeholder="Choice C">
+        <input id="opt4" placeholder="Choice D">
+      </div>
+      <label>Correct Answer:</label>
+      <div class="select-wrapper">
+        <select id="correct">
+          <option value="0">Choice A</option>
+          <option value="1">Choice B</option>
+          <option value="2">Choice C</option>
+          <option value="3">Choice D</option>
+        </select>
+      </div>
+      <button onclick="addQuestion()" class="glow-btn">Add to Bank</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-line"></div>
+    <p>Mathematics in the Modern World © <span id="year"></span></p>
+    <p class="sub-footer">Designed for Exploration</p>
+  </div>
+</footer>
+
+<script>
+const sections=document.querySelectorAll("section")
+const buttons=document.querySelectorAll("nav button")
+document.getElementById("year").innerText = new Date().getFullYear();
+
+const cursor = document.querySelector(".custom-cursor");
+const cursorDot = document.querySelector(".cursor-dot");
+
+document.addEventListener("mousemove", (e) => {
+    cursor.style.left = e.clientX + "px";
+    cursor.style.top = e.clientY + "px";
+    cursorDot.style.left = e.clientX + "px";
+    cursorDot.style.top = e.clientY + "px";
+});
+
+document.addEventListener("mousedown", () => {
+    cursor.style.transform = "translate(-50%, -50%) scale(0.8)";
+    cursorDot.style.transform = "translate(-50%, -50%) scale(1.5)";
+    cursor.style.borderColor = "#00ffff";
+});
+
+document.addEventListener("mouseup", () => {
+    cursor.style.transform = "translate(-50%, -50%) scale(1)";
+    cursorDot.style.transform = "translate(-50%, -50%) scale(1)";
+    cursor.style.borderColor = "var(--goldenrod)";
+});
+
+const titleText = "MATHEMATICS IN THE MODERN WORLD";
+const titleElement = document.getElementById("typewriter-title");
+let charIndex = 0;
+
+function typeWriter() {
+  if (charIndex < titleText.length) {
+    titleElement.innerHTML += titleText.charAt(charIndex);
+    charIndex++;
+    setTimeout(typeWriter, 40);
+  }
+}
+window.onload = typeWriter;
+
+const tabMap={
+  "concepts-tab":"concepts",
+  "symmetry-tab-btn":"symmetry-lab",
+  "exam-tab":"exam",
+  "add-tab-btn":"add-content"
+}
+
+buttons.forEach(btn=>{
+  btn.onclick=()=>{
+    buttons.forEach(b=>b.classList.remove("active-tab"))
+    btn.classList.add("active-tab")
+    sections.forEach(s=>s.classList.remove("active"))
+    document.getElementById(tabMap[btn.id]).classList.add("active")
+  }
+})
+
+const conceptData=[
+  {title:"Conceptual Foundations",text:`Mathematics is the formal study of relationships among quantities and shapes.<br><br>Nature, imagination, structure, abstraction, and creativity form its core.`},
+  {title:"Patterns and Regularities",text:"Number patterns, geometric patterns, patterns of change, and logic patterns organize reality."},
+  {title:"Symmetry and Rotation",text:`Angle of rotation: $$\\frac{360^\\circ}{n}$$`},
+  {title:"Fibonacci Sequence",text:"1, 1, 2, 3, 5, 8, 13, 21, ..."},
+  {title:"Golden Ratio",text:"Approximately $$1.618$$ (Phi)"},
+  {title:"Human Anatomy",text:"Golden ratio appears in facial proportions"},
+  {title:"Architecture",text:"Geometry governs global design"},
+  {title:"Statistics",text:"Predictive modeling"},
+  {title:"Algebra",text:"Disease and population models"},
+  {title:"Probability",text:"Risk analysis"},
+  {title:"Fractals",text:"Infinite self similarity"},
+  {title:"Chaos Theory",text:"Deterministic unpredictability"},
+  {title:"Game Theory",text:"Strategic decision making"},
+  {title:"Topology",text:"Study of spatial properties"},
+  {title:"Graph Theory",text:"Networks and connections"},
+  {title:"Number Theory",text:"Prime numbers"},
+  {title:"Calculus",text:"Change and motion"},
+  {title:"Vectors",text:"Magnitude and direction"},
+  {title:"Matrices",text:"Linear systems"},
+  {title:"Logic",text:"Formal reasoning"}
+]
+
+const grid=document.getElementById("conceptGrid")
+
+function loadConcepts(){
+  grid.innerHTML=""
+  conceptData.forEach(c=>{
+    const card=document.createElement("div")
+    card.className="card"
+    card.innerHTML=`<div class="card-inner"><h3>${c.title}</h3><div class="card-content">${c.text}</div></div><div class="card-border"></div>`
+    
+    card.onmousemove = (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -5; 
+        const rotateY = ((x - centerX) / centerX) * 5;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+    };
+
+    card.onmouseleave = () => {
+        card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`;
+    };
+
+    card.onclick=()=>card.querySelector(".card-content").classList.toggle("expanded")
+    grid.appendChild(card)
+  })
+  if(window.MathJax){MathJax.typeset()}
+}
+loadConcepts()
+
+function addNewConcept(){
+  const titleInput = document.getElementById("new-concept-title");
+  const textInput = document.getElementById("new-concept-text");
+  const t = titleInput.value.trim();
+  const d = textInput.value.trim();
+
+  if(!t || !d) {
+    alert("Please fill in both the title and description.");
+    return;
+  }
+
+  conceptData.push({title:t, text:d});
+  loadConcepts();
+  titleInput.value = "";
+  textInput.value = "";
+  alert("Success! Your new concept has been added to the library.");
+}
+
+let currentRotation=0
+
+function updateShape(){
+  const s=document.getElementById("shape-select")
+  const order=parseInt(s.selectedOptions[0].dataset.order)
+  const display=document.getElementById("shape-display")
+  currentRotation=0
+  display.innerHTML=`<div class="shape ${s.value}"></div>`
+  document.getElementById("shape-info").innerHTML=
+    `<span class="info-label">Order:</span> ${order} <span class="separator">|</span> <span class="info-label">Angle:</span> ${360/order}°`
+}
+
+function rotateShape(){
+  const s=document.getElementById("shape-select")
+  const order=parseInt(s.selectedOptions[0].dataset.order)
+  const angle=360/order
+  const shape=document.querySelector(".shape")
+  if(!shape)return
+  currentRotation+=angle
+  shape.style.transition="transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)"
+  shape.style.transform=`rotate(${currentRotation}deg)`
+}
+
+updateShape()
+
+let questions=[
+  {q:"What is the approximate value of the Golden Ratio?",c:["1.414","1.618","1.732","2.0"],a:1},
+  {q:"Which sequence starts with 1, 1, 2, 3, 5, 8...?",c:["Arithmetic","Geometric","Fibonacci","Harmonic"],a:2},
+  {q:"What is the study of infinite self-similarity called?",c:["Calculus","Fractals","Topology","Algebra"],a:1},
+  {q:"In Symmetry, what is the angle of rotation for a square (n=4)?",c:["60°","120°","90°","180°"],a:2},
+  {q:"Which theory deals with deterministic unpredictability?",c:["Game Theory","Chaos Theory","Number Theory","Graph Theory"],a:1},
+  {q:"What branch of math is the study of spatial properties that are preserved under deformation?",c:["Topology","Statistics","Logic","Matrices"],a:0},
+  {q:"What is used for strategic decision making in competitive situations?",c:["Probability","Algebra","Game Theory","Calculus"],a:2},
+  {q:"Which mathematical concept governs facial proportions in human anatomy?",c:["Fractals","Golden Ratio","Chaos Theory","Vectors"],a:1}
+]
+
+let index=0
+let score=0 
+let answered=false
+
+function triggerConfetti() {
+  for(let i=0; i<40; i++) {
+    const p = document.createElement("div");
+    p.classList.add("particle");
+    p.style.left = "50%";
+    p.style.top = "50%";
+    p.style.backgroundColor = i % 2 === 0 ? "var(--goldenrod)" : "var(--math-teal)";
+    p.style.setProperty('--x', (Math.random()*300 - 150) + 'px');
+    p.style.setProperty('--y', (Math.random()*300 - 150) + 'px');
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 1200);
+  }
+}
+
+function showQuestion(){
+  const examBox = document.getElementById("examBox")
+  const q=questions[index]
+  let html=`<div class="q-header"><span class="q-num">Q${index+1}</span></div><h3>${q.q}</h3><div class="choices-container">`
+  q.c.forEach((choice,i)=>{
+    html+=`<div class="choice" id="choice-${i}" onclick="check(${i},this)"><div class="opt-label">${String.fromCharCode(65+i)}</div><div class="opt-text">${choice}</div></div>`
+  })
+  html += `</div>`
+  examBox.innerHTML=html
+  answered=false
+  updateProgress()
+}
+
+function check(i,e){
+  if(answered)return
+  answered=true
+  
+  const correctIdx = questions[index].a
+  if(i===correctIdx){
+    e.classList.add("correct")
+    score++ 
+    triggerConfetti()
+  }else{
+    e.classList.add("wrong")
+    e.style.animation = "shake 0.4s ease"
+    document.getElementById(`choice-${correctIdx}`).classList.add("correct")
+  }
+}
+
+function nextQuestion(){
+  if(!answered) {
+    const btn = document.querySelector(".exam-controls button");
+    btn.style.animation = "shake 0.3s ease";
+    setTimeout(()=>btn.style.animation="",300);
+    return;
+  }
+  index++
+  if(index>=questions.length){
+    document.getElementById("examBox").innerHTML = `
+      <div class="result-card">
+        <div class="result-icon">🏆</div>
+        <h3>Evaluation Complete</h3>
+        <div class="score-display">${score} / ${questions.length}</div>
+        <div class="score-percent">${Math.round((score/questions.length)*100)}% Accuracy</div>
+      </div>`
+    document.getElementById("quiz-result").innerText=""
+    document.getElementById("quiz-progress-bar").style.width="100%"
+    return
+  }
+  showQuestion()
+}
+
+function retakeExam(){
+  index=0
+  score=0 
+  document.getElementById("quiz-result").innerText=""
+  showQuestion()
+}
+
+function shuffleExam(){
+  questions.sort(()=>Math.random()-0.5)
+  retakeExam()
+}
+
+function addQuestion(){
+  const qInput = document.getElementById("new-question");
+  const inputs = [
+      document.getElementById("opt1"),
+      document.getElementById("opt2"),
+      document.getElementById("opt3"),
+      document.getElementById("opt4")
+  ];
+  
+  const q = qInput.value.trim();
+  const c = inputs.map(i=>i.value.trim());
+  const a = parseInt(document.getElementById("correct").value);
+
+  if(!q || c.some(x=>!x)) {
+    alert("Please fill out the question and all four choices.");
+    return;
+  }
+
+  questions.push({q, c, a});
+  
+  qInput.value = ""; 
+  inputs.forEach(i=>i.value="");
+  alert("Success! Your question has been added to the Exam bank.");
+}
+
+function updateProgress(){
+  const bar=document.getElementById("quiz-progress-bar")
+  bar.style.width=((index)/questions.length*100)+"%"
+}
+
+showQuestion()
+
+const canvas = document.getElementById('geo-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particlesArray;
+
+let mouse = {
+    x: null,
+    y: null,
+    radius: (canvas.height/80) * (canvas.width/80)
+}
+
+window.addEventListener('mousemove', function(event) {
+        mouse.x = event.x;
+        mouse.y = event.y;
+});
+
+class Particle {
+    constructor(x, y, directionX, directionY, size, color) {
+        this.x = x;
+        this.y = y;
+        this.directionX = directionX;
+        this.directionY = directionY;
+        this.size = size;
+        this.color = color;
+    }
+    
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color; 
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+    
+    update() {
+        if (this.x > canvas.width || this.x < 0) {
+            this.directionX = -this.directionX;
+        }
+        if (this.y > canvas.height || this.y < 0) {
+            this.directionY = -this.directionY;
+        }
+
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
+        let distance = Math.sqrt(dx*dx + dy*dy);
+        if (distance < mouse.radius + this.size){
+            if (mouse.x < this.x && this.x < canvas.width - this.size * 10) {
+                this.x += 2;
+            }
+            if (mouse.x > this.x && this.x > this.size * 10) {
+                this.x -= 2;
+            }
+            if (mouse.y < this.y && this.y < canvas.height - this.size * 10) {
+                this.y += 2;
+            }
+            if (mouse.y > this.y && this.y > this.size * 10) {
+                this.y -= 2;
+            }
+        }
+        this.x += this.directionX;
+        this.y += this.directionY;
+        this.draw();
+    }
+}
+
+function init() {
+    particlesArray = [];
+    let numberOfParticles = (canvas.height * canvas.width) / 12000;
+    for (let i = 0; i < numberOfParticles; i++) {
+        let size = (Math.random() * 2) + 0.5;
+        let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+        let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+        let directionX = (Math.random() * 0.4) - 0.2;
+        let directionY = (Math.random() * 0.4) - 0.2;
+        let color = '#daa520';
+
+        particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+    }
+}
+
+function connect() {
+    let opacityValue = 1;
+    for (let a = 0; a < particlesArray.length; a++) {
+        for (let b = a; b < particlesArray.length; b++) {
+            let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
+            + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+            if (distance < (canvas.width/9) * (canvas.height/9)) {
+                opacityValue = 1 - (distance/20000);
+                ctx.strokeStyle = 'rgba(0, 128, 128,' + opacityValue + ')';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                ctx.stroke();
+            }
+        }
+    }
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+    }
+    connect();
+}
+
+window.addEventListener('resize', function() {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+    mouse.radius = ((canvas.height/80) * (canvas.height/80));
+    init();
+});
+
+init();
+animate();
+</script>
+
+</body>
+</html>
